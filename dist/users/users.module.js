@@ -5,23 +5,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
-import { BooksModule } from './books/books/books.module.js';
-import { AuthModule } from './auth/auth.module.js';
-import { UsersModule } from './users/users.module.js';
-let AppModule = class AppModule {
+import { UsersController } from './users.controller.js';
+import { UserService } from './users.service.js';
+let UsersModule = class UsersModule {
 };
-AppModule = __decorate([
+UsersModule = __decorate([
     Module({
-        imports: [
-            BooksModule,
-            AuthModule,
-            UsersModule
-        ],
-        controllers: [AppController],
-        providers: [AppService],
+        controllers: [UsersController],
+        providers: [UserService],
     })
-], AppModule);
-export { AppModule };
-//# sourceMappingURL=app.module.js.map
+], UsersModule);
+export { UsersModule };
+//# sourceMappingURL=users.module.js.map
