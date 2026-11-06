@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn, 
   UpdateDateColumn, 
 } from 'typeorm';
-import { Book } from '../../books/entities/book-entity.js';
+import { Book } from '../../books/books/entities/book-entity.js';
 
 
 @Entity('categories')

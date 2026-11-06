@@ -1,12 +1,13 @@
+
 import {
   Controller,
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   ParseUUIDPipe,
+  Put,
 } from '@nestjs/common';
 
 import { CategoriesService } from './categories.service.js';
@@ -19,22 +20,26 @@ export class CategoriesController {
     private readonly categoriesService: CategoriesService,
   ) {}
 
+  // Menambahkan kategori
   @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoriesService.create(createCategoryDto);
+  create(@Body() category: CreateCategoryDto) {
+    return this.categoriesService.create(category);
   }
 
+  // Menampilkan semua kategori
   @Get()
   findAll() {
     return this.categoriesService.findAll();
   }
 
+  // Menampilkan kategori berdasarkan ID
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.categoriesService.findOne(id);
+    return this.categoriesService.findById(id);
   }
 
-  @Patch(':id')
+  // Mengubah kategori berdasarkan ID
+  @Put(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
@@ -42,8 +47,9 @@ export class CategoriesController {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 
+  // Menghapus kategori berdasarkan ID
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.categoriesService.remove(id);
+    return this.categoriesService.delete(id);
   }
 }

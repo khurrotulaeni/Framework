@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 
 import { OrderItem } from './entities/order-item.entity.js';
 import { Order } from '../orders/entities/order.entity.js';
-import { Book } from '../books/entities/book-entity.js';
+import { Book } from '../books/books/entities/book-entity.js';
 
 import { CreateOrderItemDto } from './dto/create-order-item.dto.js';
 import { UpdateOrderItemDto } from './dto/update-order-item.dto.js';

@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 import type { Relation } from 'typeorm';
-import { Book } from '../../books/entities/book-entity.js';
+import { Book } from '../../books/books/entities/book-entity.js';
 import { BookAuthor } from '../../book-authors/entities/book-author.entity.js';
 
 @Entity({ name: 'authors' })

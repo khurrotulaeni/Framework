@@ -11,7 +11,7 @@ import {
 import type { Relation } from 'typeorm';
 
 import { Order } from '../../orders/entities/order.entity.js';
-import { Book } from '../../books/entities/book-entity.js';
+import { Book } from '../../books/books/entities/book-entity.js';
 
 @Entity({ name: 'order_items' })
 export class OrderItem {

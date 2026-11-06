@@ -1,10 +1,10 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
 import type { Relation } from "typeorm"
-import { Category } from "../../categories/entities/category-entity.js";
-import { Publisher } from "../../publishers/entities/publisher-entity.js";
-import { Author } from "../../authors/entities/authors-entity.js";
-import { BookAuthor } from "../../book-authors/entities/book-author.entity.js";
-import { OrderItem } from "../../order-items/entities/order-item.entity.js";
+import { Category } from "../../../categories/entities/category-entity.js";
+import { Publisher } from "../../../publishers/entities/publisher-entity.js";
+import { Author } from "../../../authors/entities/authors-entity.js";
+import { BookAuthor } from "../../../book-authors/entities/book-author.entity.js";
+import { OrderItem } from "../../../order-items/entities/order-item.entity.js";
 
 @Entity({name: 'books'})
 export class Book{

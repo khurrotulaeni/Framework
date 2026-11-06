@@ -18,75 +18,58 @@ export class CategoriesService {
     private categoryRepository: Repository<Category>,
   ) {}
 
-  // Menambahkan kategori
-  async create(createCategoryDto: CreateCategoryDto) {
-    const existingCategory = await this.categoryRepository.findOne({
-      where: { name: createCategoryDto.name },
-    });
-
-    if (existingCategory) {
-      throw new ConflictException('Nama kategori sudah digunakan');
-    }
-
-    const category = this.categoryRepository.create(createCategoryDto);
-
-    return await this.categoryRepository.save(category);
-  }
-
   // Menampilkan semua kategori
   async findAll() {
-    return await this.categoryRepository.find();
+    return await this.categoryRepository.find({
+      order: { createdAt: 'DESC' },
+    });
   }
 
-  // Menampilkan kategori berdasarkan ID
-  async findOne(id: string) {
+  //menampilkan kategori berdasarkan id
+  async findById(id: string) : Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { id },
-      relations: {
-        books: true,
-      },
-    });
-
+  });
     if (!category) {
-      throw new NotFoundException('Kategori tidak ditemukan');
+      throw new NotFoundException(`Kategori dengan ID ${id} tidak ditemukan`);
     }
-
     return category;
   }
 
-  // Mengubah data kategori
-  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    const category = await this.findOne(id);
+  //menyimpan data kategori baru
+  async create(Category: CreateCategoryDto) : Promise<Category> {
+    const newCategory = this.categoryRepository.create(Category);
 
-    if (updateCategoryDto.name) {
-      const existingCategory = await this.categoryRepository.findOne({
-        where: { name: updateCategoryDto.name },
-      });
-
-      if (existingCategory && existingCategory.id !== id) {
-        throw new ConflictException('Nama kategori sudah digunakan');
-      }
-    }
-
-    Object.assign(category, updateCategoryDto);
-
-    return await this.categoryRepository.save(category);
+    return await this.categoryRepository.save(newCategory);
   }
 
-  // Menghapus kategori
-  async remove(id: string) {
-    const category = await this.findOne(id);
+  // mengubah data kategori berdasarkan id
+async update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+  const category = await this.categoryRepository.findOne({
+    where: { id },
+  });
 
-    if (category.books.length > 0) {
-      throw new ConflictException(
-        'Kategori tidak dapat dihapus karena masih digunakan oleh buku',
-      );
+  if (!category) {
+    throw new NotFoundException(`Kategori dengan ID ${id} tidak ditemukan`);
+  }
+
+  const updatedCategory = this.categoryRepository.merge(
+    category,
+    updateCategoryDto,
+  );
+
+  return await this.categoryRepository.save(updatedCategory);
+}
+
+  //menghapus data kategori berdasarkan id
+  async delete(id: string) {
+    const category = await this.categoryRepository.findOne({
+      where: { id },
+    });
+    if (!category) {
+      throw new NotFoundException(`Kategori dengan ID ${id} tidak ditemukan`);
     }
-
     await this.categoryRepository.remove(category);
-
-    return {
-      message: 'Kategori berhasil dihapus',
-    };
+    return { message: 'Kategori berhasil dihapus', deletedId: id };
   }
 }

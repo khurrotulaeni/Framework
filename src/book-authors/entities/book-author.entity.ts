@@ -6,7 +6,7 @@ import {
 } from 'typeorm';
 import type { Relation } from 'typeorm';
 
-import { Book } from '../../books/entities/book-entity.js';
+import { Book } from '../../books/books/entities/book-entity.js';
 import { Author } from '../../authors/entities/authors-entity.js';
 
 @Entity({ name: 'book_authors' })
