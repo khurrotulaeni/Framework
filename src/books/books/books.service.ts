@@ -1,75 +1,124 @@
-import { Injectable } from '@nestjs/common';
+
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Book } from './entities/book-entity.js';
 import { CreateBookDto } from './dto/create-book.dto.js';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Publisher } from '../../publishers/entities/publisher-entity.js';
+import { Category } from '../../categories/entities/category-entity.js';
 
 @Injectable()
 export class BooksService {
-    private books: Book[] = [
-        {
-            id: 1,
-            title: 'The Great Gatsby',
-            author: 'F. Scott Fitzgerald',
-            isbn: '978-0-7432-7356-5',
-            publishedyear: 1925,
-            isAvailable: true
-        },
-        {
-            id: 2,
-            title: 'To Kill a Mockingbird',
-            author: 'Harper Lee',
-            isbn: '978-0-06-112008-4',
-            publishedyear: 1960,
-            isAvailable: false
-        }
-    ];
+    constructor(
+        @InjectRepository(Book)
+        private readonly bookRepository: Repository<Book>,
 
-    //logic untuk menampilkan data
-    findAll(): Book[] {
-        return this.books;
+        @InjectRepository(Category)
+        private readonly categoryRepository: Repository<Category>,
+
+        @InjectRepository(Publisher)
+        private readonly publisherRepository: Repository<Publisher>,
+    ) {}
+
+    // Mendapatkan semua buku
+    async findAll(): Promise<Book[]> {
+        return await this.bookRepository.find({
+            relations: { category: true, publisher: true },
+            order: { createdAt: 'DESC' }
+        });
     }
 
-    //simpan data
-    simpanData(createBookDto: CreateBookDto): Book {
-        //simpan data ke dalam array books
-        const newBook: Book = {
-            id: this.books.length + 1,
+    // Menyimpan data buku
+    async simpanData(createBookDto: CreateBookDto): Promise<Book> {
+        const category = await this.categoryRepository.findOneBy({
+            id: createBookDto.categoryId
+        });
+
+        if (!category) {
+            throw new NotFoundException('Kategori tidak ditemukan');
+        }
+
+        const publisher = await this.publisherRepository.findOneBy({
+            id: createBookDto.publisherId
+        });
+
+        if (!publisher) {
+            throw new NotFoundException('Penerbit tidak ditemukan');
+        }
+
+        const newBook = this.bookRepository.create({
             title: createBookDto.title,
             author: createBookDto.author,
             isbn: createBookDto.isbn,
-            publishedyear: createBookDto.publishedyear,
-            isAvailable: true
-        };
+            publishedYear: createBookDto.publishedYear,
+            isAvailable: createBookDto.isAvailable ?? true,
+            price: String(createBookDto.price),
+            stock: createBookDto.stock,
+            category: category,
+            publisher: publisher
+        });
 
-        //simpan data ke array books
-        this.books.push(newBook);
-
-        return newBook;
+        return await this.bookRepository.save(newBook);
     }
 
-    //update data
-    updateData(id: number, updateBookDto: CreateBookDto): Book {
-        const bookIndex = this.books.findIndex(book => book.id === id);
-        if (bookIndex === -1) {
-            throw new Error(`Buku dengan id ${id} tidak ditemukan`);
+    // Menampilkan buku berdasarkan ID
+    async findOne(id: string): Promise<Book> {
+        const book = await this.bookRepository.findOne({
+            where: { id },
+            relations: { category: true, publisher: true }
+        });
+
+        if (!book) {
+            throw new NotFoundException(`Buku ${id} tidak ditemukan`);
         }
 
-        const updatedBook: Book = {
-            ...this.books[bookIndex],
-            title: updateBookDto.title,
-            author: updateBookDto.author,
-            isbn: updateBookDto.isbn,
-            publishedyear: updateBookDto.publishedyear,
-        };
-        this.books[bookIndex] = updatedBook;
-        return updatedBook;
+        return book;
     }
 
-    //hapus data
-    hapusData(id: number): void {
-        const bookIndex = this.books.findIndex(book => book.id === id);
-        if (bookIndex === -1) {
-            throw new Error(`Buku dengan id ${id} tidak ditemukan`);
-        }       
-        this.books.splice(bookIndex, 1);
+    // Mengupdate data buku
+    async updateData(id: string, createBookDto: CreateBookDto): Promise<Book> {
+        const book = await this.findOne(id);
+
+        const category = await this.categoryRepository.findOneBy({
+            id: createBookDto.categoryId
+        });
+
+        if (!category) {
+            throw new NotFoundException('Kategori tidak ditemukan');
+        }
+
+        const publisher = await this.publisherRepository.findOneBy({
+            id: createBookDto.publisherId
+        });
+
+        if (!publisher) {
+            throw new NotFoundException('Penerbit tidak ditemukan');
+        }
+
+        this.bookRepository.merge(book, {
+            title: createBookDto.title,
+            author: createBookDto.author,
+            isbn: createBookDto.isbn,
+            publishedYear: createBookDto.publishedYear,
+            isAvailable: createBookDto.isAvailable ?? book.isAvailable,
+            price: String(createBookDto.price),
+            stock: createBookDto.stock,
+            category,
+            publisher
+        });
+
+        return await this.bookRepository.save(book);
+    }
+
+    // Menghapus buku (soft delete)
+    async deleteData(id: string): Promise<{ message: string, deletedId: string }> {
+        await this.findOne(id);
+
+        await this.bookRepository.softDelete(id);
+
+        return {
+            message: `Buku ${id} berhasil dihapus`,
+            deletedId: id
+        };
     }
 }
